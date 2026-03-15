@@ -1,0 +1,10 @@
+menu "Matter LED Ecosystem"
+
+    config RUN_TESTS
+        bool "Run Unit Tests"
+        default n
+        help
+            If enabled, the application will run the registered unit tests
+            instead of the main application logic.
+
+endmenu

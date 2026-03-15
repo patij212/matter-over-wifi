@@ -1,0 +1,10 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/firmware",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "idf.espIdfPath": "${workspaceFolder}/esp-idf",
+    "idf.customExtraPaths": "",
+    "files.associations": {
+        "*.h": "cpp",
+        "*.cpp": "cpp"
+    }
+}

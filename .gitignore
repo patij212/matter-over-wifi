@@ -1,0 +1,44 @@
+# ESP-IDF SDK (too large for git, install separately)
+esp-idf/
+
+# ESP-Matter SDK (too large for git, install separately)
+esp-matter/
+esp-matter-v2/
+
+# Build artifacts
+build/
+firmware/build/
+gn_out/
+sdkconfig
+sdkconfig.old
+sdkconfig.test
+
+# Managed components (auto-downloaded by idf.py, except our custom led_strip)
+firmware/managed_components/*
+!firmware/managed_components/espressif__led_strip/
+
+# Python
+*.pyc
+__pycache__/
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+
+# Temporary / Doc extraction artifacts
+docx_extracted/
+*.zip
+document_content.txt
+
+# Build logs
+build_log*.txt
+
+# Claude Code session data
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Dependency output
+deps_output.txt

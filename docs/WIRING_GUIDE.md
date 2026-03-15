@@ -277,54 +277,65 @@ This diagram shows the complete wiring for an ESP32-S3 with a 60-LED strip, exte
   ORANGE |      | BLACK  | GREEN    | BLUE   | (not used for
   wire   |      | wire   | wire     | wire   |  external power)
          |      |        |          |
-         |      |        |          |
-         |      +--------+-----+   |     +==============+
-         |      |        |     |   |     |  5V PSU      |
-         |      |        |     |   |     |  (5A)        |
-         |      |        |     |   |     |              |
-         |      |        |     |   |     | [+5V] [GND]  |
-         |      |        |     |   |     +===+=====+=====
-         |      |        |     |   |         |     |
-         |      |        |     |   |    RED  |     | BLACK
-         |      |        |     |   |    wire |     | wire
-         |      |        |     |   |         |     |
-         |      |        |     |   |   +-----+     |
-         |      |        |     |   |   |     +-----+----+
-         |      |        |     |   |   |           |    |
-         |      |        |     |   |   |  +========+==  |  1000uF 25V
-         |      |        |     |   |   |  || (+)      |  |  Capacitor
-         |      |        |     |   |   |  ||  CAP     |  |  (between
-         |      |        |     |   |   |  || (-)      |  |   +5V & GND
-         |      |        |     |   |   |  +========+==  |   at strip)
-         |      |        |     |   |   |           |    |
-         |      |    +---+     |   |   |           |    |
-         |      |    |         |   |   |           |    |
-         |      |    | [330R]  |   |   |           |    |
-         |      |    |  ===    |   |   |           |    |
-         |      |    +---+     |   |   |           |    |
-         |      |        |     |   |   |           |    |
-         |      |        v     |   |   v           |    v
-         |      |  +=====+=====+===+===+===========+====+=====+
-         |      |  ||                                          ||
-         |      |  ||   DIN     5V     GND    WS2812B Strip   ||
-         |      |  ||   (grn)  (red)  (blk)                   ||
-         |      |  ||                                          ||
-         |      |  || [LED 0][LED 1][LED 2]  ...  [LED 59]    ||
-         |      |  ||                                          ||
-         |      |  ||           Arrow direction --->           ||
-         |      |  +============================================+
-         |      |
-         |      |     +-----------+
-         |      |     |  MAX4466  |
-         |      |     |  Mic Amp  |
-         |      |     |           |
-         +------|---->| VCC       |
-                |     |           |
-                +---->| GND       |
+         |      |        |          |        +==============+
+         |      |        |          |        |  5V PSU      |
+         |      |        |          |        |  (5A)        |
+         |      |        |          |        |              |
+         |      |        |          |        | [+5V] [GND]  |
+         |      |        |          |        +===+=====+====+
+         |      |        |          |            |     |
+         |      |        |          |       RED  |     | BLACK
+         |      |        |          |       wire |     | wire
+         |      |        |          |            |     |
+         |      |    +---+         |            |     |
+         |      |    |             |            |     |
+         |      |    | [330R]      |            |     |
+         |      |    |  ===        |            |     |
+         |      |    +---+         |            |     |
+         |      |        |         |            |     |
+         |      |        |         |            |     |
+         |      |        |         |     +------+     |
+         |      |        |         |     |            |
+         |      |        |         |     |    CAP     |
+         |      |        |         |     |  + | | -   |  1000uF 25V
+         |      |        |         |     |    | |     |  Capacitor
+         |      |        |         |     |            |
+         |      |        |         |     |     +------+
+         |      |        |         |     |     |
+         |      |        v         |     v     v
+         |      |  +=====+=========+====+=====+===================+
+         |      |  ||                                             ||
+         |      |  ||   DIN      5V      GND     WS2812B Strip   ||
+         |      |  ||   (grn)   (red)   (blk)                    ||
+         |      |  ||                                             ||
+         |      |  || [LED 0][LED 1][LED 2]  ...  [LED 59]       ||
+         |      |  ||                                             ||
+         |      |  ||           Arrow direction --->              ||
+         |      |  +===============================================+
+         |      |              ^
+         |      |              |
+         |      +--------------+  <-- ESP32 GND connects to strip
+         |                        GND (COMMON GROUND - see note)
+         |
+         |            +-----------+
+         |            |  MAX4466  |
+         |            |  Mic Amp  |
+         |            |           |
+         +----------->| VCC       |
+         |            |           |
+         |   (ESP32   |           |
+         |    GND) -->| GND       |
                       |           |
            BLUE wire  |    OUT  --+  (connects to GPIO 1
                       |           |   on the ESP32 above)
                       +-----------+
+
+
+    *** COMMON GROUND ***
+    Wires #3, #4, and #6 MUST all connect to the SAME ground node.
+    The ESP32 GND, PSU GND, strip GND, and mic GND must all be
+    electrically connected. Without this, nothing will work.
+
 
     WIRE SUMMARY:
     +-------+--------+-------------------+-------------------+
@@ -332,12 +343,13 @@ This diagram shows the complete wiring for an ESP32-S3 with a 60-LED strip, exte
     +-------+--------+-------------------+-------------------+
     | 1     | GREEN  | ESP32 GPIO 48     | 330R -> Strip DIN |
     | 2     | RED    | PSU +5V           | Strip 5V          |
-    | 3     | BLACK  | PSU GND           | Strip GND         |
-    | 4     | BLACK  | ESP32 GND         | Strip GND (same)  |
+    | 3     | BLACK  | PSU GND           | Strip GND *       |
+    | 4     | BLACK  | ESP32 GND         | Strip GND *       |
     | 5     | ORANGE | ESP32 3V3         | MAX4466 VCC       |
-    | 6     | BLACK  | ESP32 GND         | MAX4466 GND       |
+    | 6     | BLACK  | ESP32 GND         | MAX4466 GND *     |
     | 7     | BLUE   | MAX4466 OUT       | ESP32 GPIO 1      |
     +-------+--------+-------------------+-------------------+
+    * Wires 3, 4, 6 must share common ground
     + 1000uF capacitor across Strip 5V and Strip GND
     + 330 ohm resistor in series with data line
 ```
@@ -505,7 +517,7 @@ This is the simplest possible setup: a short LED strip powered from USB.
 
 5. **Flash and test.** The strip should show blue breathing on first boot (commissioning mode).
 
-> **Limitation:** USB can supply ~500mA (USB 2.0) to ~900mA (USB 3.0). At full white brightness, 10 LEDs draw 600mA + 240mA for the ESP32 = 840mA. Stay under 10 LEDs or reduce brightness.
+> **Limitation:** USB can supply ~500mA (USB 2.0) to ~900mA (USB 3.0). At full white brightness, 10 LEDs draw 600mA + ~100-240mA for the ESP32 (depending on Wi-Fi/BLE activity). Stay under 10 LEDs or reduce brightness to avoid brownouts.
 
 ---
 
@@ -522,48 +534,53 @@ This is the simplest possible setup: a short LED strip powered from USB.
 ### Wiring Diagram
 
 ```
-    +==================+          +================+
-    |  5V Power Supply |          | ESP32 DevKit   |
-    |                  |          | (USB-powered)  |
-    | AC In    +5V GND |          |                |
-    |  ~       [+] [-] |          | GPIOx     GND  |
-    +======+====+===+==+          +===+========+===+
-           |    |   |                 |        |
-           |    |   |    330 ohm      |        |
-           |    |   |    resistor     |        |
-           |    |   |       +---[===]-+        |
-           |    |   |       |                  |
-           |    |   +-------+---------+--------+----+
-           |    |           |         |             |
-           |    +-----------+----+    |             |
-           |                |    |    |             |
-           |           +----+    |    |             |
-           |           |         |    |             |
-           |   1000uF  |         |    |             |
-           |   CAP     |         |    |             |
-           |  (+)||(-)  |         |    |             |
-           |     ||     |         |    |             |
-           |     +------+---------+    |             |
-           |            |              |             |
-           |            v              v             v
-           |    +=======+=============++=============+=====+
-           |    ||                                         ||
-           |    ||  5V          DIN          GND           ||
-           |    ||  (red)       (green)      (black)       ||
-           |    ||                                         ||
-           |    ||  [LED 0] [LED 1] [LED 2] ... [LED 59]  ||
-           |    ||                                         ||
-           |    ||  Arrow direction --->                   ||
-           |    +===========================================+
+    +==================+              +================+
+    |  5V Power Supply |              | ESP32 DevKit   |
+    |                  |              | (USB-powered)  |
+    | AC In    +5V GND |              |                |
+    |  ~       [+] [-] |              | GPIOx     GND  |
+    +======+====+===+==+              +===+========+===+
+           |    |   |                     |        |
+           |    |   |        330 ohm      |        |
+           |    |   |        resistor     |        |
+           |    |   |           +--[===]--+        |
+           |    |   |           |                  |
+           |    |   |           |                  |
+           |    |   |    +------+                  |
+           |    |   |    |                         |
+           |    |   |    |   CAP                   |
+           |    |   |    |  + | | -                |
+           |    |   |    |    | |                  |
+           |    |   |    |                         |
+           |    |   |    |         COMMON GROUND   |
+           |    |   |    |         ==============  |
+           |    |   +----+---------+===+-----------+
+           |    |        |         |   |
+           |    |        |         |   |  All three GNDs
+           |    +---+    |         |   |  meet here:
+           |        |    |         |   |  - PSU GND
+           |        |    |         |   |  - ESP32 GND
+           |        v    v         v   |  - Strip GND
+           |    +=======+==========+===+==================+
+           |    ||                                        ||
+           |    ||  5V        DIN          GND            ||
+           |    ||  (red)     (green)      (black)        ||
+           |    ||                                        ||
+           |    ||  [LED 0] [LED 1] [LED 2] ... [LED 59] ||
+           |    ||                                        ||
+           |    ||  Arrow direction --->                  ||
+           |    +==========================================+
            |
            | (AC mains - to wall outlet)
 
 
-    IMPORTANT: Three GND connections must meet at the same point:
+    *** COMMON GROUND - MOST IMPORTANT CONNECTION ***
+    Three GND connections must meet at the same point:
     - ESP32 GND
     - Power Supply GND (-)
     - LED Strip GND
-    All three must be connected together. This is called "common ground."
+    All three must be connected together. Without common ground,
+    the data signal has no reference and the LEDs will not work.
 ```
 
 ### Instructions
@@ -773,7 +790,7 @@ Then a level shifter will fix it.
     ESP32                SN74HCT125N              LED Strip
     +------+            +----+----+               +-------+
     |      |            |  14| VCC|---[5V]        |       |
-    | GPIO +---[330R]-->|1A  |    |               |       |
+    | GPIO +----------->|1A  |    |               |       |
     |      |            |1Y  |----+--[330R]------>| DIN   |
     |      |            |    |    |               |       |
     |      |            | 1OE|---[GND]            |       |
@@ -785,10 +802,15 @@ Then a level shifter will fix it.
     SN74HCT125N Pin Connections:
     - Pin 14 (VCC): Connect to 5V
     - Pin 7  (GND): Connect to common GND
-    - Pin 1  (1A):  Input from ESP32 GPIO (through 330R)
-    - Pin 2  (1Y):  Output to LED strip DIN (through 330R)
+    - Pin 1  (1A):  Input from ESP32 GPIO (direct connection, no resistor needed)
+    - Pin 2  (1Y):  Output to LED strip DIN (through 330R for ringing suppression)
     - Pin 3  (1OE): Connect to GND (active low enable)
     - All other pins: Leave unconnected (or tie unused OE pins to VCC)
+
+    Note: The 330 ohm resistor goes ONLY on the output side (between 1Y
+    and strip DIN). The input side needs no resistor — the HCT input is
+    high-impedance CMOS with a low threshold (~0.8V), so 3.3V drives it
+    cleanly.
 ```
 
 Alternative chips: **74AHCT1G125**, **TXS0108E** (bidirectional, overkill but works).

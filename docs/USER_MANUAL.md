@@ -128,6 +128,15 @@ The firmware includes 10 built-in effects:
 
 Effects are rendered at 60 FPS. Speed is adjustable per segment.
 
+### 3.1 Selecting Effects
+
+Effects are stored per-segment and persist across power cycles via NVS. The active effect can be set through:
+- **Firmware default**: On first boot, all segments start with **Solid** (effect 0)
+- **NVS persistence**: The last-used effect is restored automatically after a reboot
+- **Programmatic control**: Effects are set via the `LedEngine::set_effect()` API internally
+
+> **Note:** Direct effect selection through the Matter controller is not yet exposed as a standard Matter cluster attribute. A future update may add a custom cluster or use the Matter mode-select cluster to allow effect switching from your smart home app.
+
 ---
 
 ## 4. Button Controls
@@ -136,8 +145,8 @@ The BOOT button on the development board provides two functions:
 
 | Action | Duration | Function |
 |--------|----------|----------|
-| Short press | < 10 seconds | Toggle LED strip on/off |
-| Long press | >= 10 seconds | Factory reset (erases all data, restarts) |
+| Quick press | Tap (< 1 second) | Toggle LED strip on/off |
+| Long press | Hold >= 10 seconds | Factory reset (erases all data, restarts) |
 
 **Button GPIO:** GPIO 0 (S3) / GPIO 9 (C3, C6)
 
@@ -148,7 +157,7 @@ The BOOT button on the development board provides two functions:
 ## 5. Power Management
 
 When `CONFIG_PM_ENABLE` is set in sdkconfig, the firmware enables:
-- **Dynamic Frequency Scaling (DFS)**: CPU scales between 80-240 MHz based on load
+- **Dynamic Frequency Scaling (DFS)**: CPU scales down during idle periods (ESP32-S3: 80-240 MHz, ESP32-C3/C6: 80-160 MHz)
 - **Automatic Light Sleep**: CPU enters light sleep during idle periods
 
 This reduces power consumption when the LEDs are off or running a low-activity effect.
